@@ -1,0 +1,4 @@
+include RELEASE-VERSION
+include AUTHORS COPYING README INSTALL LICENCE
+graft thecut/googleanalytics/static
+graft thecut/googleanalytics/templates

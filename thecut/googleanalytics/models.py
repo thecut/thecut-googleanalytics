@@ -1,8 +1,5 @@
+from django.db import models
 from django.contrib.sites.models import Site
-try:
-  from django.db import models
-except:
-  print 'what?'
 
 
 class AnalyticsWebProperty(models.Model):
