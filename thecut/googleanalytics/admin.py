@@ -1,5 +1,5 @@
 from django.contrib import admin
-from googleanalytics.models import AnalyticsWebProperty
+from thecut.googleanalytics.models import AnalyticsWebProperty
 
 
 class AnalyticsWebPropertyAdmin(admin.ModelAdmin):

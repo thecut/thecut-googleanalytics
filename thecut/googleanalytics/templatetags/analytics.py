@@ -1,6 +1,6 @@
 from django import template
 from django.contrib.sites.models import Site
-from googleanalytics.models import AnalyticsWebProperty
+from thecut.googleanalytics.models import AnalyticsWebProperty
 
 
 register = template.Library()
