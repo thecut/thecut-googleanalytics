@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, unicode_literals
 from django import template
-from django.contrib.sites.models import Site
 from thecut.googleanalytics.models import AnalyticsWebProperty
 
 
@@ -14,9 +15,8 @@ def analytics_tracking_code(context):
     
     """
     request = context['request']
-    site = Site.objects.get_current()
     try:
-        analytics = AnalyticsWebProperty.objects.get(site=site)
+        analytics = AnalyticsWebProperty.objects.get_current()
     except AnalyticsWebProperty.DoesNotExist:
         analytics_enabled = False
         web_property_id = None
