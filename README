@@ -1,2 +1,30 @@
 The Cut Django App: Google Analytics
 
+
+
+======================
+thecut.googleanalytics
+======================
+
+To install this application (whilst in the project's activated
+virtualenv)::
+    pip install git+ssh://git@git.thecut.net.au/thecut-googleanalytics
+
+
+Add the ``thecut.googleanalytics`` to the project's ``INSTALLED_APPS``
+setting::
+
+    INSTALLED_APPS = (
+        ...
+        'thecut.googleanalytics',
+    )
+
+
+Add the analytics template tag to the ``<head>`` section of your base
+template::
+
+    {% block analytics %}
+        {% load analytics %}
+        {% analytics_tracking_code %}
+    {% endblock %}
+

@@ -11,7 +11,7 @@ class AnalyticsWebProperty(models.Model):
     http://www.google.com/analytics/
     
     """
-    site = models.OneToOneField('sites.Site', unique=True)
+    site = models.OneToOneField('sites.Site', unique=True, related_name='+')
     web_property_id = models.CharField(max_length=25,
         help_text='Web Property ID is obtained when \
         <a href="http://www.google.com/analytics/" target="_new">\
