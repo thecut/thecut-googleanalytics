@@ -2,12 +2,12 @@
 from __future__ import absolute_import, unicode_literals
 from django.db import models
 from thecut.googleanalytics import settings
-from thecut.googleanalytics.managers import AnalyticsWebPropertyManager
+from thecut.googleanalytics.managers import ProfileManager
 import pickle
 
 
-class AnalyticsWebProperty(models.Model):
-    """Google Analytics web property settings for a site.
+class Profile(models.Model):
+    """Google Analytics profile settings for a site.
     
     Google Analytics profiles can be created at:
     http://www.google.com/analytics/
@@ -22,12 +22,10 @@ class AnalyticsWebProperty(models.Model):
         help_text='Is Google Analytics tracking enabled on the website?')
     # pickled gdata.gauth.OAuth2Token object
     _oauth2_token = models.TextField(default='', blank=True, editable=False)
-    objects = AnalyticsWebPropertyManager()
+    objects = ProfileManager()
     
     class Meta(object):
         ordering = ['site']
-        verbose_name = 'web property'
-        verbose_name_plural = 'web properties'
     
     def __unicode__(self):
         return self.site.name

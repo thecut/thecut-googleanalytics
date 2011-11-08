@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 from django import forms
-from thecut.googleanalytics.models import AnalyticsWebProperty
+from thecut.googleanalytics.models import Profile
 
 
-class AnalyticsWebPropertyForm(forms.ModelForm):
+class ProfileForm(forms.ModelForm):
     class Meta(object):
-        model = AnalyticsWebProperty
+        model = Profile
     
     def __init__(self, *args, **kwargs):
-        super(AnalyticsWebPropertyForm, self).__init__(*args, **kwargs)
+        super(ProfileForm, self).__init__(*args, **kwargs)
         if self.instance.use_gdata():
             self.fields['web_property_id'].label = 'Web property'
             self.fields['web_property_id'].help_text = None

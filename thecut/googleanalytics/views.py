@@ -7,7 +7,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_unicode
 from thecut.googleanalytics import settings
-from thecut.googleanalytics.models import AnalyticsWebProperty
+from thecut.googleanalytics.models import Profile
 
 # Class-based views
 from distutils.version import StrictVersion
@@ -19,11 +19,10 @@ else:
 
 
 class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
-    model = AnalyticsWebProperty
+    model = Profile
     scope = 'https://www.google.com/analytics/feeds/'
     
-    @method_decorator(permission_required(
-        'googleanalytics.change_analyticswebproperty'))
+    @method_decorator(permission_required('googleanalytics.change_profile'))
     def dispatch(self, *args, **kwargs):
         return super(OAuth2RequestTokenView, self).dispatch(*args, **kwargs)
     
@@ -77,18 +76,17 @@ class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
 
 class OAuth2RevokeTokenView(generic.edit.DeleteView):
     admin = None
-    model = AnalyticsWebProperty
+    model = Profile
     template_name_suffix = '_confirm_revoke'
     
     def delete(self, *args, **kwargs):
-        awp = self.get_object()
-        awp.revoke_oauth2_token()
-        awp.save()
+        profile = self.get_object()
+        profile.revoke_oauth2_token()
+        profile.save()
         messages.success(self.request, 'Unlinked Google Analytics account.')
         return HttpResponseRedirect(self.get_success_url())
     
-    @method_decorator(permission_required(
-        'googleanalytics.change_analyticswebproperty'))
+    @method_decorator(permission_required('googleanalytics.change_profile'))
     def dispatch(self, *args, **kwargs):
         return super(OAuth2RevokeTokenView, self).dispatch(*args, **kwargs)
     

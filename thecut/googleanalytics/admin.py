@@ -4,13 +4,13 @@ from django.conf.urls.defaults import url, patterns
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from thecut.googleanalytics import views
-from thecut.googleanalytics.forms import AnalyticsWebPropertyForm
-from thecut.googleanalytics.models import AnalyticsWebProperty
+from thecut.googleanalytics.forms import ProfileForm
+from thecut.googleanalytics.models import Profile
 
 
-class AnalyticsWebPropertyAdmin(admin.ModelAdmin):
-    form = AnalyticsWebPropertyForm
-    list_display = ['__unicode__', 'web_property_id', 'linked']
+class ProfileAdmin(admin.ModelAdmin):
+    form = ProfileForm
+    list_display = ['__unicode__', 'web_property_id', 'is_enabled', 'linked']
     
     def linked(self, obj):
         if obj.use_gdata():
@@ -30,8 +30,8 @@ class AnalyticsWebPropertyAdmin(admin.ModelAdmin):
                 views.OAuth2RevokeTokenView.as_view(admin=self),
                 name='oauth2_revoke_token'),
         )
-        urlpatterns += super(AnalyticsWebPropertyAdmin, self).get_urls()
+        urlpatterns += super(ProfileAdmin, self).get_urls()
         return urlpatterns
 
-admin.site.register(AnalyticsWebProperty, AnalyticsWebPropertyAdmin)
+admin.site.register(Profile, ProfileAdmin)
 
