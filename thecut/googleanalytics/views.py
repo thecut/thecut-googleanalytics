@@ -98,6 +98,7 @@ class OAuth2RevokeTokenView(generic.edit.DeleteView):
     def delete(self, *args, **kwargs):
         profile = self.get_object()
         profile.revoke_oauth2_token()
+        profile.profile_id = ''
         profile.save()
         messages.success(self.request, 'Unlinked Google Analytics account.')
         return HttpResponseRedirect(self.get_success_url())
