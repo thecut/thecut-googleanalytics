@@ -22,6 +22,7 @@ class GDataProfileForm(forms.ModelForm):
         if self.instance.use_gdata():
             self.feed = self.get_profile_feed()
             self.fields['profile_id'].label = 'Profile'
+            self.fields['profile_id'].help_text = self.feed.title.text
             self.fields['profile_id'].required = True
             self.fields['profile_id'].widget = forms.Select(
                 choices=self.get_profile_choices())
