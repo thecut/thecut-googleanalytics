@@ -14,12 +14,13 @@ class Profile(models.Model):
     
     """
     site = models.OneToOneField('sites.Site', unique=True, related_name='+')
-    web_property_id = models.CharField(max_length=25,
+    web_property_id = models.CharField('web property ID', max_length=25,
         help_text='Web Property ID is obtained when ' \
         '<a href="http://www.google.com/analytics/" target="_new">' \
         'configuring the site profile in Google Analytics</a>.')
-    profile_id = models.CharField(max_length=25, blank=True)
-    is_enabled = models.BooleanField(default=False,
+    profile_id = models.CharField('profile ID', max_length=25, blank=True,
+        default='')
+    is_enabled = models.BooleanField('enabled', default=False,
         help_text='Is Google Analytics tracking enabled on the website?')
     # pickled gdata.gauth.OAuth2Token object
     _oauth2_token = models.TextField(default='', blank=True, editable=False)
