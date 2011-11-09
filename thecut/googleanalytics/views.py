@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 from django.contrib import messages
+from django.contrib.admin.options import csrf_protect_m
 from django.contrib.auth.decorators import permission_required
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect
@@ -22,6 +23,7 @@ class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
     model = Profile
     scope = 'https://www.google.com/analytics/feeds/'
     
+    @csrf_protect_m
     @method_decorator(permission_required('googleanalytics.change_profile'))
     def dispatch(self, *args, **kwargs):
         return super(OAuth2RequestTokenView, self).dispatch(*args, **kwargs)
@@ -86,6 +88,7 @@ class OAuth2RevokeTokenView(generic.edit.DeleteView):
         messages.success(self.request, 'Unlinked Google Analytics account.')
         return HttpResponseRedirect(self.get_success_url())
     
+    @csrf_protect_m
     @method_decorator(permission_required('googleanalytics.change_profile'))
     def dispatch(self, *args, **kwargs):
         return super(OAuth2RevokeTokenView, self).dispatch(*args, **kwargs)
