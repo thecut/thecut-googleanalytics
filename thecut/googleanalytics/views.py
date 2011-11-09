@@ -30,25 +30,29 @@ class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
     
     def get(self, *args, **kwargs):
         self.object = self.get_object()
-        self.oauth2_request_token = self.request.session.pop('oauth2_request_token', None)
-        self.oauth2_code =  self.request.GET.get('code', None)
-        self.request.session.modified = True
-        
-        if self.oauth2_request_token is not None \
-            and self.oauth2_code is not None:
-            return self.authorize_token()
-        else:
-            return self.request_token()
+        return self.request_token()
     
     def get_scope(self):
         return self.scope
     
     def get_redirect_url(self):
-        return self.request.build_absolute_uri()
+        return self.request.build_absolute_uri('../callback')
     
-    def get_success_url(self):
-        #TODO
-        return '../../../'
+    def request_token(self):
+        from gdata.gauth import OAuth2Token
+        request_token = OAuth2Token(client_id=settings.GDATA_CLIENT_ID,
+            client_secret=settings.GDATA_CLIENT_SECRET, scope=self.get_scope(),
+            user_agent=settings.USER_AGENT)
+        url = request_token.generate_authorize_url(
+            redirect_uri=self.get_redirect_url())
+        self.request.session['oauth2_googleanalytics_profile'] = self.object
+        self.request.session['oauth2_request_token'] = request_token
+        self.request.session.modified = True
+        return HttpResponseRedirect(url)
+
+
+class OAuth2CallbackView(generic.View):
+    object = None
     
     def authorize_token(self):
         from gdata.gauth import OAuth2AccessTokenError
@@ -62,18 +66,28 @@ class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
             self.object.oauth2_token = access_token
             self.object.save()
             messages.success(self.request, 'Linked Google Analytics account.')
-        return HttpResponseRedirect(self.get_success_url())
     
-    def request_token(self):
-        from gdata.gauth import OAuth2Token
-        request_token = OAuth2Token(client_id=settings.GDATA_CLIENT_ID,
-            client_secret=settings.GDATA_CLIENT_SECRET, scope=self.get_scope(),
-            user_agent=settings.USER_AGENT)
-        url = request_token.generate_authorize_url(
-            redirect_uri=self.get_redirect_url())
-        self.request.session['oauth2_request_token'] = request_token
+    @csrf_protect_m
+    @method_decorator(permission_required('googleanalytics.change_profile'))
+    def dispatch(self, *args, **kwargs):
+        return super(OAuth2CallbackView, self).dispatch(*args, **kwargs)
+    
+    def get(self, *args, **kwargs):
+        self.object = self.request.session.pop(
+            'oauth2_googleanalytics_profile', None)
+        self.oauth2_request_token = self.request.session.pop(
+            'oauth2_request_token', None)
+        self.oauth2_code =  self.request.GET.get('code', None)
         self.request.session.modified = True
-        return HttpResponseRedirect(url)
+        
+        if None in [self.oauth2_request_token, self.oauth2_code, self.object]:
+            return HttpResponseRedirect('../')
+        else:
+            self.authorize_token()
+            return HttpResponseRedirect(self.get_success_url())
+    
+    def get_success_url(self):
+        return '../'
 
 
 class OAuth2RevokeTokenView(generic.edit.DeleteView):
@@ -125,6 +139,5 @@ class OAuth2RevokeTokenView(generic.edit.DeleteView):
             'admin/%s/%s/revoke_confirmation.html' %(app_label, model_name)]
     
     def get_success_url(self):
-        #TODO
-        return '../../../'
+        return '../../'
 

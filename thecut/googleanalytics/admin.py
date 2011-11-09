@@ -14,9 +14,9 @@ class ProfileAdmin(admin.ModelAdmin):
     
     def linked(self, obj):
         if obj.use_gdata():
-            label = 'Linked (<a href="%s/oauth2/token/revoke">unlink</a>)'
+            label = 'Linked (<a href="oauth2/revoke/%s">unlink</a>)'
         else:
-            label = 'Unlinked (<a href="%s/oauth2/token/request">link</a>)'
+            label = 'Unlinked (<a href="oauth2/request/%s">link</a>)'
         return label %(obj.pk)
     linked.allow_tags = True
     linked.short_description = 'Analytics API'
@@ -30,10 +30,13 @@ class ProfileAdmin(admin.ModelAdmin):
     
     def get_urls(self):
         urlpatterns = patterns('thecut.googleanalytics.views',
-            url(r'^(?P<pk>\d+)/oauth2/token/request$',
+            url(r'^oauth2/request/(?P<pk>\d+)$',
                 views.OAuth2RequestTokenView.as_view(),
                 name='oauth2_request_token'),
-            url(r'^(?P<pk>\d+)/oauth2/token/revoke$',
+            url(r'^oauth2/callback$',
+                views.OAuth2CallbackView.as_view(),
+                name='oauth2_callback'),
+            url(r'^oauth2/revoke/(?P<pk>\d+)$',
                 views.OAuth2RevokeTokenView.as_view(admin=self),
                 name='oauth2_revoke_token'),
         )
