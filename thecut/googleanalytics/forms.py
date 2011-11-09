@@ -30,21 +30,21 @@ class GDataProfileForm(forms.ModelForm):
     def get_profile_feed(self):
         from gdata.analytics.client import ProfileQuery
         client = self.instance.get_gdata_client()
-        return client.GetManagementFeed(ProfileQuery())
+        return client.get_management_feed(ProfileQuery())
     
     def get_profile_choices(self):
         choices = []
         if self.instance.use_gdata() and self.feed is not None:
             for entry in self.feed.entry:
-                profile_id = entry.GetProperty('ga:profileId').value
-                profile_name = entry.GetProperty('ga:profileName').value
+                profile_id = entry.get_property('ga:profileId').value
+                profile_name = entry.get_property('ga:profileName').value
                 choices += [(profile_id, profile_name)]
         return choices
     
     def get_web_property_for_profile(self, profile_id):
         for entry in self.feed.entry:
-            if profile_id == entry.GetProperty('ga:profileId').value:
-                return entry.GetProperty('ga:webPropertyId').value
+            if profile_id == entry.get_property('ga:profileId').value:
+                return entry.get_property('ga:webPropertyId').value
     
     def save(self, *args, **kwargs):
         if self.instance.use_gdata() and self.feed is not None:
