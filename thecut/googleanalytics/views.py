@@ -87,7 +87,7 @@ class OAuth2CallbackView(generic.View):
             return HttpResponseRedirect(self.get_success_url())
     
     def get_success_url(self):
-        return '../'
+        return '../%s/' %(self.object.pk)
 
 
 class OAuth2RevokeTokenView(generic.edit.DeleteView):
