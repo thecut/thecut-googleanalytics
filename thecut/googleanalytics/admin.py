@@ -3,21 +3,24 @@ from __future__ import absolute_import, unicode_literals
 from django.conf.urls.defaults import url, patterns
 from django.contrib import admin
 from django.core.urlresolvers import reverse
-from thecut.googleanalytics import views
+from thecut.googleanalytics import settings, views
 from thecut.googleanalytics.forms import GDataProfileForm, ProfileForm
 from thecut.googleanalytics.models import Profile
 
 
 class ProfileAdmin(admin.ModelAdmin):
-    #form = ProfileForm
-    list_display = ['__unicode__', 'web_property_id', 'profile_id', 'is_enabled', 'linked']
+    list_display = ['__unicode__', 'web_property_id', 'profile_id',
+        'is_enabled', 'linked']
     
     def linked(self, obj):
-        if obj.use_gdata():
-            label = 'Linked (<a href="oauth2/revoke/%s">unlink</a>)'
+        if settings.USE_GDATA:
+            if obj.use_gdata():
+                label = 'Linked (<a href="oauth2/revoke/%s">unlink</a>)'
+            else:
+                label = 'Unlinked (<a href="oauth2/request/%s">link</a>)'
+            return label %(obj.pk)
         else:
-            label = 'Unlinked (<a href="oauth2/request/%s">link</a>)'
-        return label %(obj.pk)
+            return 'Disabled'
     linked.allow_tags = True
     linked.short_description = 'Analytics API'
     
