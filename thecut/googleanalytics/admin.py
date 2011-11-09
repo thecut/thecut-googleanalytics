@@ -4,13 +4,13 @@ from django.conf.urls.defaults import url, patterns
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from thecut.googleanalytics import views
-from thecut.googleanalytics.forms import ProfileForm
+from thecut.googleanalytics.forms import GDataProfileForm, ProfileForm
 from thecut.googleanalytics.models import Profile
 
 
 class ProfileAdmin(admin.ModelAdmin):
-    form = ProfileForm
-    list_display = ['__unicode__', 'web_property_id', 'is_enabled', 'linked']
+    #form = ProfileForm
+    list_display = ['__unicode__', 'web_property_id', 'profile_id', 'is_enabled', 'linked']
     
     def linked(self, obj):
         if obj.use_gdata():
@@ -20,6 +20,13 @@ class ProfileAdmin(admin.ModelAdmin):
         return label %(obj.pk)
     linked.allow_tags = True
     linked.short_description = 'Analytics API'
+    
+    def get_form(self, request, obj=None, **kwargs):
+        if obj and obj.use_gdata():
+            self.form = GDataProfileForm
+        else:
+            self.form = ProfileForm
+        return super(ProfileAdmin, self).get_form(request, obj=None, **kwargs)
     
     def get_urls(self):
         urlpatterns = patterns('thecut.googleanalytics.views',

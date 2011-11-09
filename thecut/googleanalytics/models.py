@@ -15,9 +15,10 @@ class Profile(models.Model):
     """
     site = models.OneToOneField('sites.Site', unique=True, related_name='+')
     web_property_id = models.CharField(max_length=25,
-        help_text='Web Property ID is obtained when \
-        <a href="http://www.google.com/analytics/" target="_new">\
-        configuring the site profile in Google Analytics</a>.')
+        help_text='Web Property ID is obtained when ' \
+        '<a href="http://www.google.com/analytics/" target="_new">' \
+        'configuring the site profile in Google Analytics</a>.')
+    profile_id = models.CharField(max_length=25, blank=True)
     is_enabled = models.BooleanField(default=False,
         help_text='Is Google Analytics tracking enabled on the website?')
     # pickled gdata.gauth.OAuth2Token object
