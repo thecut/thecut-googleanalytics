@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, unicode_literals
 from django import template
-from django.contrib.sites.models import Site
-from thecut.googleanalytics.models import AnalyticsWebProperty
+from thecut.googleanalytics.models import Profile
 
 
 register = template.Library()
@@ -14,10 +15,9 @@ def analytics_tracking_code(context):
     
     """
     request = context['request']
-    site = Site.objects.get_current()
     try:
-        analytics = AnalyticsWebProperty.objects.get(site=site)
-    except AnalyticsWebProperty.DoesNotExist:
+        analytics = Profile.objects.get_current()
+    except Profile.DoesNotExist:
         analytics_enabled = False
         web_property_id = None
     else:
