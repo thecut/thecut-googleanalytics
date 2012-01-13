@@ -35,7 +35,7 @@ class Profile(models.Model):
         assert self.use_gdata()
         from gdata.analytics.client import AnalyticsClient
         if not hasattr(self, '_gdata_client'):
-            self._gdata_client = AnalyticsClient()
+            self._gdata_client = AnalyticsClient(source=settings.USER_AGENT)
             self.oauth2_token.authorize(self._gdata_client)
         return self._gdata_client
     
