@@ -3,7 +3,6 @@ from __future__ import absolute_import, unicode_literals
 from django.db import models
 from thecut.googleanalytics import settings
 from thecut.googleanalytics.managers import ProfileManager
-import pickle
 
 
 class Profile(models.Model):
@@ -22,7 +21,7 @@ class Profile(models.Model):
         default='')
     is_enabled = models.BooleanField('enabled', default=False,
         help_text='Is Google Analytics tracking enabled on the website?')
-    # pickled gdata.gauth.OAuth2Token object
+    # gdata.gauth.OAuth2Token blob
     _oauth2_token = models.TextField(default='', blank=True, editable=False)
     objects = ProfileManager()
     
@@ -45,17 +44,15 @@ class Profile(models.Model):
     
     @property
     def oauth2_token(self):
-        # TODO: Only pickle when loading/saving to the database?
-        from gdata.gauth import OAuth2Token
-        return self._oauth2_token and pickle.loads(str(self._oauth2_token)) \
+        from gdata.gauth import OAuth2Token, token_from_blob
+        return self._oauth2_token and token_from_blob(self._oauth2_token) \
             or None
     
     @oauth2_token.setter
     def oauth2_token(self, oauth2_token):
-        # TODO: Only pickle when loading/saving to the database?
-        from gdata.gauth import OAuth2Token
+        from gdata.gauth import OAuth2Token, token_to_blob
         if type(oauth2_token) is OAuth2Token:
-            self._oauth2_token = str(pickle.dumps(oauth2_token))
+            self._oauth2_token = token_to_blob(oauth2_token)
         elif oauth2_token is None:
             self._oauth2_token = ''
         else:
