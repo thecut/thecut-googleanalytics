@@ -48,7 +48,7 @@ class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
         self.request.session['oauth2_googleanalytics_profile'] = self.object
         self.request.session['oauth2_request_token'] = request_token
         self.request.session.modified = True
-        return HttpResponseRedirect(url)
+        return HttpResponseRedirect('%s&access_type=offline' %(url))
 
 
 class OAuth2CallbackView(generic.View):
