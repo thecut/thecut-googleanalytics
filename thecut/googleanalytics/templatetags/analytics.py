@@ -14,7 +14,7 @@ def analytics_tracking_code(context):
     http://code.google.com/apis/analytics/docs/tracking/asyncUsageGuide.html
     
     """
-    request = context['request']
+    
     try:
         analytics = Profile.objects.get_current()
     except Profile.DoesNotExist:
@@ -24,5 +24,5 @@ def analytics_tracking_code(context):
         analytics_enabled = analytics.is_enabled
         web_property_id = analytics.web_property_id
     return {'analytics_enabled': analytics_enabled,
-        'web_property_id': web_property_id, 'request': request}
+        'web_property_id': web_property_id, 'request': context.get('request')}
 
