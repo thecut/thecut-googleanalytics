@@ -4,9 +4,10 @@ from django.contrib import messages
 from django.contrib.admin.options import csrf_protect_m
 from django.contrib.auth.decorators import permission_required
 from django.core.urlresolvers import reverse
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_unicode
+from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
 from thecut.googleanalytics import settings
 from thecut.googleanalytics.models import Profile
 
@@ -21,7 +22,7 @@ else:
 
 class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
     model = Profile
-    scope = 'https://www.google.com/analytics/feeds/'
+    scope = 'https://www.googleapis.com/auth/analytics'
     
     @csrf_protect_m
     @method_decorator(permission_required('googleanalytics.change_profile'))
@@ -30,41 +31,36 @@ class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
     
     def get(self, *args, **kwargs):
         self.object = self.get_object()
-        return self.request_token()
+        flow = self.get_flow()
+        self.request.session['oauth2_googleanalytics_profile'] = self.object
+        self.request.session['oauth2_flow'] = flow
+        self.request.session.modified = True
+        return HttpResponseRedirect(flow.step1_get_authorize_url())
+    
+    def get_flow(self):
+        return OAuth2WebServerFlow(client_id=settings.GOOGLE_API_CLIENT_ID,
+            client_secret=settings.GOOGLE_API_CLIENT_SECRET,
+            scope=self.get_scope(), redirect_uri=self.get_redirect_url(),
+            user_agent=settings.USER_AGENT, access_type='offline')
     
     def get_scope(self):
         return self.scope
     
     def get_redirect_url(self):
         return self.request.build_absolute_uri('../callback')
-    
-    def request_token(self):
-        from gdata.gauth import OAuth2Token
-        request_token = OAuth2Token(client_id=settings.GDATA_CLIENT_ID,
-            client_secret=settings.GDATA_CLIENT_SECRET, scope=self.get_scope(),
-            user_agent=settings.USER_AGENT)
-        url = request_token.generate_authorize_url(
-            redirect_uri=self.get_redirect_url())
-        self.request.session['oauth2_googleanalytics_profile'] = self.object
-        self.request.session['oauth2_request_token'] = request_token
-        self.request.session.modified = True
-        return HttpResponseRedirect('%s&access_type=offline' %(url))
 
 
 class OAuth2CallbackView(generic.View):
     object = None
     
-    def authorize_token(self):
-        from gdata.gauth import OAuth2AccessTokenError
-        request_token = self.oauth2_request_token
+    def exchange_token(self, flow, code):
         try:
-            access_token = request_token.get_access_token(self.oauth2_code)
-        except OAuth2AccessTokenError, e:
-            #TODO: Handling of error
-            raise Exception(e.error_message)
+            credentials = flow.step2_exchange(code)
+        except FlowExchangeError, e:
+            # TODO: Error Handling
+            raise
         else:
-            self.object.oauth2_token = access_token
-            self.object.save()
+            self.object.oauth2_credentials = credentials
             messages.success(self.request, 'Linked Google Analytics account.')
     
     @csrf_protect_m
@@ -73,17 +69,17 @@ class OAuth2CallbackView(generic.View):
         return super(OAuth2CallbackView, self).dispatch(*args, **kwargs)
     
     def get(self, *args, **kwargs):
-        self.object = self.request.session.pop(
-            'oauth2_googleanalytics_profile', None)
-        self.oauth2_request_token = self.request.session.pop(
-            'oauth2_request_token', None)
-        self.oauth2_code =  self.request.GET.get('code', None)
+        self.object = self.request.session.pop('oauth2_googleanalytics_profile',
+            None)
+        flow = self.request.session.pop('oauth2_flow', None)
+        code =  self.request.GET.get('code', None)
         self.request.session.modified = True
         
-        if None in [self.oauth2_request_token, self.oauth2_code, self.object]:
-            return HttpResponseRedirect('../')
+        if None in [self.object, flow, code]:
+            # TODO: Error handling
+            return HttpResponseBadRequest()
         else:
-            self.authorize_token()
+            self.exchange_token(flow, code)
             return HttpResponseRedirect(self.get_success_url())
     
     def get_success_url(self):
@@ -97,7 +93,7 @@ class OAuth2RevokeTokenView(generic.edit.DeleteView):
     
     def delete(self, *args, **kwargs):
         profile = self.get_object()
-        profile.revoke_oauth2_token()
+        profile.revoke_oauth2_credentials()
         profile.profile_id = ''
         profile.save()
         messages.success(self.request, 'Unlinked Google Analytics account.')
@@ -125,7 +121,7 @@ class OAuth2RevokeTokenView(generic.edit.DeleteView):
     
     def get_object(self, *args, **kwargs):
         obj = super(OAuth2RevokeTokenView, self).get_object(*args, **kwargs)
-        if not obj.use_gdata():
+        if not obj.use_google_api():
             raise Http404()
         return obj
     

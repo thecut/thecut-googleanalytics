@@ -4,51 +4,46 @@ from django import forms
 from thecut.googleanalytics.models import Profile
 
 
-class ProfileForm(forms.ModelForm):
+class ProfileAdminForm(forms.ModelForm):
     class Meta(object):
         model = Profile
-        exclude = ['profile_id']
+        fields = ['site', 'web_property_id', 'is_enabled']
 
 
-class GDataProfileForm(forms.ModelForm):
-    feed = None
+class GoogleAPIProfileAdminForm(forms.ModelForm):
     
     class Meta(object):
         model = Profile
-        exclude = ['web_property_id']
+        fields = ['site', 'profile_id', 'is_enabled']
     
     def __init__(self, *args, **kwargs):
-        super(GDataProfileForm, self).__init__(*args, **kwargs)
-        if self.instance.use_gdata():
-            self.feed = self.get_profile_feed()
-            self.fields['profile_id'].label = 'Profile'
-            self.fields['profile_id'].help_text = self.feed.title.text
-            self.fields['profile_id'].required = True
-            self.fields['profile_id'].widget = forms.Select(
-                choices=self.get_profile_choices())
+        super(GoogleAPIProfileAdminForm, self).__init__(*args, **kwargs)
+        self.profiles = {}
+        
+        api_response = self.get_profiles_list()
+        
+        for profile in api_response.get('items', []):
+            self.profiles.update({profile['id']: profile})
+        
+        self.fields['profile_id'].label = 'Profile'
+        self.fields['profile_id'].help_text = 'Google Analytics profiles ' \
+            'for %s' %(api_response['username'])
+        self.fields['profile_id'].required = True
+        self.fields['profile_id'].widget = forms.Select(
+            choices=self.get_profile_choices())
     
-    def get_profile_feed(self):
-        from gdata.analytics.client import ProfileQuery
-        client = self.instance.get_gdata_client()
-        return client.get_management_feed(ProfileQuery())
+    def get_profiles_list(self):
+        service = self.instance.get_analytics_google_api_client()
+        request = service.management().profiles().list(webPropertyId='~all',
+            accountId='~all', fields='items(id,name,webPropertyId),username')
+        return request.execute()
     
     def get_profile_choices(self):
-        choices = []
-        if self.instance.use_gdata() and self.feed is not None:
-            for entry in self.feed.entry:
-                profile_id = entry.get_property('ga:profileId').value
-                profile_name = entry.get_property('ga:profileName').value
-                choices += [(profile_id, profile_name)]
-        return choices
-    
-    def get_web_property_for_profile(self, profile_id):
-        for entry in self.feed.entry:
-            if profile_id == entry.get_property('ga:profileId').value:
-                return entry.get_property('ga:webPropertyId').value
+        return [(profile['id'], profile['name']) for profile in
+            self.profiles.values()]
     
     def save(self, *args, **kwargs):
-        if self.instance.use_gdata() and self.feed is not None:
-            self.instance.web_property_id = self.get_web_property_for_profile(
-                self.cleaned_data['profile_id'])
-        return super(GDataProfileForm, self).save(*args, **kwargs)
+        profile = self.profiles[self.cleaned_data['profile_id']]
+        self.instance.web_property_id = profile['webPropertyId']
+        return super(GoogleAPIProfileAdminForm, self).save(*args, **kwargs)
 
