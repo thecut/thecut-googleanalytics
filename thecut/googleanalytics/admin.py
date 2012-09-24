@@ -4,7 +4,8 @@ from django.conf.urls.defaults import url, patterns
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from thecut.googleanalytics import settings, views
-from thecut.googleanalytics.forms import GDataProfileForm, ProfileForm
+from thecut.googleanalytics.forms import (GoogleAPIProfileAdminForm,
+    ProfileAdminForm)
 from thecut.googleanalytics.models import Profile
 
 
@@ -13,8 +14,8 @@ class ProfileAdmin(admin.ModelAdmin):
         'is_enabled', 'linked']
     
     def linked(self, obj):
-        if settings.USE_GDATA:
-            if obj.use_gdata():
+        if settings.USE_GOOGLE_API:
+            if obj.use_google_api():
                 label = 'Linked (<a href="oauth2/revoke/%s">unlink</a>)'
             else:
                 label = 'Unlinked (<a href="oauth2/request/%s">link</a>)'
@@ -25,10 +26,10 @@ class ProfileAdmin(admin.ModelAdmin):
     linked.short_description = 'Analytics API'
     
     def get_form(self, request, obj=None, **kwargs):
-        if obj and obj.use_gdata():
-            self.form = GDataProfileForm
+        if obj and obj.use_google_api():
+            self.form = GoogleAPIProfileAdminForm
         else:
-            self.form = ProfileForm
+            self.form = ProfileAdminForm
         return super(ProfileAdmin, self).get_form(request, obj=None, **kwargs)
     
     def get_urls(self):
