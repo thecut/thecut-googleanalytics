@@ -8,14 +8,16 @@ class ProfileAdminForm(forms.ModelForm):
 
     class Meta(object):
         model = Profile
-        fields = ('site', 'web_property_id', 'is_enabled')
+        fields = ('site', 'web_property_id', 'display_advertiser_support',
+                  'is_enabled')
 
 
 class GoogleAPIProfileAdminForm(forms.ModelForm):
 
     class Meta(object):
         model = Profile
-        fields = ('site', 'profile_id', 'is_enabled')
+        fields = ('site', 'profile_id', 'display_advertiser_support',
+                  'is_enabled')
 
     def __init__(self, *args, **kwargs):
         super(GoogleAPIProfileAdminForm, self).__init__(*args, **kwargs)

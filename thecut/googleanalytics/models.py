@@ -33,6 +33,8 @@ class Profile(models.Model):
                   'configuring the site profile in Google Analytics</a>.')
     profile_id = models.CharField('profile ID', max_length=25, blank=True,
                                   default='')
+    display_advertiser_support = models.BooleanField(
+        default=False, help_text='Use DoubleClick remarketing tracking?')
     is_enabled = models.BooleanField(
         'enabled', default=False, help_text='Is Google Analytics tracking '
                                             'enabled on the website?')
