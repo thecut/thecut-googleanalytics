@@ -19,33 +19,35 @@ else:
 
 class Profile(models.Model):
     """Google Analytics profile settings for a site.
-    
+
     Google Analytics profiles can be created at:
     http://www.google.com/analytics/
-    
+
     """
-    
+
     site = models.OneToOneField('sites.Site', unique=True, related_name='+')
-    web_property_id = models.CharField('web property ID', max_length=25,
-        help_text='Web Property ID is obtained when ' \
-        '<a href="http://www.google.com/analytics/" target="_new">' \
-        'configuring the site profile in Google Analytics</a>.')
+    web_property_id = models.CharField(
+        'web property ID', max_length=25,
+        help_text='Web Property ID is obtained when '
+                  '<a href="http://www.google.com/analytics/" target="_new">'
+                  'configuring the site profile in Google Analytics</a>.')
     profile_id = models.CharField('profile ID', max_length=25, blank=True,
-        default='')
-    is_enabled = models.BooleanField('enabled', default=False,
-        help_text='Is Google Analytics tracking enabled on the website?')
-    
+                                  default='')
+    is_enabled = models.BooleanField(
+        'enabled', default=False, help_text='Is Google Analytics tracking '
+                                            'enabled on the website?')
+
     objects = ProfileManager()
-    
+
     class Meta(object):
-        ordering = ['site']
-    
+        ordering = ('site',)
+
     def __unicode__(self):
         return self.site.name
-    
+
     def _get_oauth2_storage(self):
         return Storage(ProfileOAuth2Credentials, 'id', self, 'credentials')
-    
+
     def get_analytics_google_api_client(self):
         if self.use_google_api():
             http = self.oauth2_credentials.authorize(Http())
@@ -53,31 +55,32 @@ class Profile(models.Model):
         else:
             # TODO
             raise Exception('Google API not available.')
-    
+
     def use_google_api(self):
         if (self.pk and settings.USE_GOOGLE_API):
             return ProfileOAuth2Credentials.objects.filter(id=self).exists()
         else:
             return False
-    
+
     @property
     def oauth2_credentials(self):
         storage = self._get_oauth2_storage()
         return storage.get()
-    
+
     @oauth2_credentials.setter
     def oauth2_credentials(self, credentials):
         storage = self._get_oauth2_storage()
         return storage.put(credentials)
-    
+
     def revoke_oauth2_credentials(self):
         # Revoke the access token - this seems to be missing from oauth2client,
         # so we'll do it ourselves.
         # https://developers.google.com/accounts/docs/OAuth2WebServer#tokenrevoke
         # http://code.google.com/p/google-api-python-client/issues/detail?id=98
         http = self.oauth2_credentials.authorize(Http())
-        http.request('https://accounts.google.com/o/oauth2/revoke?token=%s' %(
-            self.oauth2_credentials.refresh_token))
+        http.request(
+            'https://accounts.google.com/o/oauth2/revoke?token={0}'.format(
+                self.oauth2_credentials.refresh_token))
         # TODO: Check for response status of 200
         storage = self._get_oauth2_storage()
         storage.delete()
@@ -85,11 +88,11 @@ class Profile(models.Model):
 
 class ProfileOAuth2Credentials(models.Model):
     """Stores Google OAuth2 credentials for a Profile."""
-    
+
     # Very yucky to use the id like this, but it is required by oauth2client's
     # django_orm Storage, which blindly created new instances without checking
     # to see if one already exists - with an id, it gets saved over the top).
     id = models.OneToOneField('googleanalytics.Profile',
-        related_name='_oauth2_credentials', primary_key=True)
+                              related_name='_oauth2_credentials',
+                              primary_key=True)
     credentials = CredentialsField()
-

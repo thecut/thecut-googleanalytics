@@ -1,13 +1,10 @@
 The Cut Django App: Google Analytics
 
-
-
 ======================
 thecut.googleanalytics
 ======================
 
-To install this application (whilst in the project's activated
-virtualenv)::
+To install this application (whilst in the project's activated virtualenv)::
     pip install git+ssh://git@git.thecut.net.au/thecut-googleanalytics
 
 
@@ -27,4 +24,3 @@ template::
         {% load analytics %}
         {% analytics_tracking_code %}
     {% endblock %}
-
