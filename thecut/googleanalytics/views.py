@@ -117,7 +117,8 @@ class OAuth2RevokeTokenView(generic.edit.DeleteView):
             'app_label': opts.app_label,
             'title': 'Unlink {0}'.format(
                 force_unicode(opts.verbose_name_plural)),
-            'root_path': self.admin.admin_site.root_path,
+            'root_path': reverse(
+                '{0}:index'.format(self.admin.admin_site.name)),
             'base_template': '{0}/change_form.html'.format(
                 self.admin.admin_site.name)}
         for key, value in defaults.items():
