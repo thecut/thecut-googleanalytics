@@ -11,5 +11,5 @@ setup(
     version=get_git_version(),
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['distribute', 'google-api-python-client'],
+    install_requires=['google-api-python-client'],
 )
