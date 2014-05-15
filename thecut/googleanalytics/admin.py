@@ -31,11 +31,12 @@ class ProfileAdmin(admin.ModelAdmin):
     linked.short_description = 'Analytics API'
 
     def get_form(self, request, obj=None, **kwargs):
+        # Calling super didn't work with Django 1.6, so we're just returning
+        # the ModelForm class.
         if obj and obj.use_google_api():
-            self.form = GoogleAPIProfileAdminForm
+            return GoogleAPIProfileAdminForm
         else:
-            self.form = ProfileAdminForm
-        return super(ProfileAdmin, self).get_form(request, obj=None, **kwargs)
+            return ProfileAdminForm
 
     def get_urls(self):
         urlpatterns = patterns(
