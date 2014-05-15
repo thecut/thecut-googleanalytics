@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+from . import settings
+from .models import Profile
 from django.contrib import messages
 from django.contrib.admin.options import csrf_protect_m
 from django.contrib.auth.decorators import permission_required
@@ -8,8 +10,6 @@ from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_unicode
 from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
-from thecut.googleanalytics import settings
-from thecut.googleanalytics.models import Profile
 
 # Class-based views
 from distutils.version import StrictVersion
@@ -31,6 +31,7 @@ class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
         return super(OAuth2RequestTokenView, self).dispatch(*args, **kwargs)
 
     def get(self, *args, **kwargs):
+        self.model.objects.clear_cache()
         self.object = self.get_object()
         flow = self.get_flow()
         self.request.session['oauth2_googleanalytics_profile'] = self.object
@@ -59,11 +60,12 @@ class OAuth2CallbackView(generic.View):
     def exchange_token(self, flow, code):
         try:
             credentials = flow.step2_exchange(code)
-        except FlowExchangeError, e:
+        except FlowExchangeError:
             # TODO: Error Handling
             raise
         else:
             self.object.oauth2_credentials = credentials
+            Profile.objects.clear_cache()
             messages.success(self.request, 'Linked Google Analytics account.')
 
     @csrf_protect_m
@@ -75,7 +77,7 @@ class OAuth2CallbackView(generic.View):
         self.object = self.request.session.pop(
             'oauth2_googleanalytics_profile', None)
         flow = self.request.session.pop('oauth2_flow', None)
-        code =  self.request.GET.get('code', None)
+        code = self.request.GET.get('code', None)
         self.request.session.modified = True
 
         if None in [self.object, flow, code]:
@@ -90,6 +92,7 @@ class OAuth2CallbackView(generic.View):
 
 
 class OAuth2RevokeTokenView(generic.edit.DeleteView):
+
     admin = None
     model = Profile
     template_name_suffix = '_confirm_revoke'
@@ -99,6 +102,7 @@ class OAuth2RevokeTokenView(generic.edit.DeleteView):
         profile.revoke_oauth2_credentials()
         profile.profile_id = ''
         profile.save()
+        self.model.objects.clear_cache()
         messages.success(self.request, 'Unlinked Google Analytics account.')
         return HttpResponseRedirect(self.get_success_url())
 
@@ -136,10 +140,12 @@ class OAuth2RevokeTokenView(generic.edit.DeleteView):
         app_label = self.admin.model._meta.app_label
         model_name = self.admin.model._meta.object_name.lower()
 
-        return ['{0}/{1}/{2}/revoke_confirmation.html'.format(
-                    current_app, app_label, model_name),
-                'admin/{0}/{1}/revoke_confirmation.html'.format(
-                    app_label, model_name)]
+        return [
+            '{0}/{1}/{2}/revoke_confirmation.html'.format(
+                current_app, app_label, model_name),
+            'admin/{0}/{1}/revoke_confirmation.html'.format(
+                app_label, model_name)
+        ]
 
     def get_success_url(self):
         return '../../'
