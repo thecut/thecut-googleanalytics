@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+from . import receivers, settings
+from .managers import ProfileManager
 from apiclient.discovery import build
 from django.db import models
 from httplib2 import Http
 from oauth2client.django_orm import CredentialsField, Storage
-from thecut.googleanalytics import settings
-from thecut.googleanalytics.managers import ProfileManager
 
 
 # South introspection rules for oauth2client's CredentialsField
@@ -87,6 +87,9 @@ class Profile(models.Model):
         storage = self._get_oauth2_storage()
         storage.delete()
 
+models.signals.post_save.connect(receivers.clear_cache, sender=Profile)
+models.signals.post_delete.connect(receivers.clear_cache, sender=Profile)
+
 
 class ProfileOAuth2Credentials(models.Model):
     """Stores Google OAuth2 credentials for a Profile."""
@@ -98,3 +101,8 @@ class ProfileOAuth2Credentials(models.Model):
                               related_name='_oauth2_credentials',
                               primary_key=True)
     credentials = CredentialsField()
+
+models.signals.post_save.connect(receivers.clear_cache,
+                                 sender=ProfileOAuth2Credentials)
+models.signals.post_delete.connect(receivers.clear_cache,
+                                   sender=ProfileOAuth2Credentials)
