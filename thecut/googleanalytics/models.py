@@ -14,7 +14,8 @@ try:
 except ImportError:
     pass
 else:
-    add_introspection_rules([], ['^oauth2client\.django_orm\.CredentialsField'])
+    add_introspection_rules(
+        [], ['^oauth2client\.django_orm\.CredentialsField'])
 
 
 class Profile(models.Model):

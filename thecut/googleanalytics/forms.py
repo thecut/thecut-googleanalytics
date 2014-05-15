@@ -37,13 +37,14 @@ class GoogleAPIProfileAdminForm(forms.ModelForm):
 
     def get_profiles_list(self):
         service = self.instance.get_analytics_google_api_client()
-        request = service.management().profiles().list(webPropertyId='~all',
-            accountId='~all', fields='items(id,name,webPropertyId),username')
+        request = service.management().profiles().list(
+            webPropertyId='~all', accountId='~all',
+            fields='items(id,name,webPropertyId),username')
         return request.execute()
 
     def get_profile_choices(self):
         return [(profile['id'], profile['name']) for profile in
-            self.profiles.values()]
+                self.profiles.values()]
 
     def save(self, *args, **kwargs):
         profile = self.profiles[self.cleaned_data['profile_id']]

@@ -7,6 +7,7 @@ from thecut.googleanalytics.models import Profile
 
 register = template.Library()
 
+
 @register.inclusion_tag('googleanalytics/_analytics_tracking_code.html',
                         takes_context=True)
 def analytics_tracking_code(context):

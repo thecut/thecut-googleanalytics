@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+from . import settings, views
+from .forms import GoogleAPIProfileAdminForm, ProfileAdminForm
+from .models import Profile
 from django.contrib import admin
-from django.core.urlresolvers import reverse
-from thecut.googleanalytics import settings, views
-from thecut.googleanalytics.forms import (GoogleAPIProfileAdminForm,
-    ProfileAdminForm)
-from thecut.googleanalytics.models import Profile
 
 try:
     from django.conf.urls import url, patterns
