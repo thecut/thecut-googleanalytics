@@ -29,13 +29,12 @@ class Profile(models.Model):
     site = models.OneToOneField('sites.Site', unique=True, related_name='+')
 
     web_property_id = models.CharField(
-        'web property ID', max_length=25,
-        help_text='Web Property ID is obtained when '
-                  '<a href="http://www.google.com/analytics/" target="_new">'
-                  'configuring the site profile in Google Analytics</a>.')
+        'property tracking ID', max_length=25,
+        help_text='The property tracking ID is available when viewing the '
+                  '"Tracking Code" details in the Google Analytics admin.')
 
-    profile_id = models.CharField('profile ID', max_length=25, blank=True,
-                                  default='')
+    profile_id = models.CharField('view (profile) ID', max_length=25,
+                                  blank=True, default='')
 
     display_features = models.BooleanField(
         'Use Display advertising features?', default=False,
@@ -48,7 +47,9 @@ class Profile(models.Model):
     objects = ProfileManager()
 
     class Meta(object):
-        ordering = ('site',)
+        ordering = ['site']
+        verbose_name = 'view (profile)'
+        verbose_name_plural = 'views (profiles)'
 
     def __unicode__(self):
         return self.site.name

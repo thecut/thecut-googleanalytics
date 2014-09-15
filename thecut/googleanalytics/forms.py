@@ -10,11 +10,17 @@ class ProfileAdminForm(forms.ModelForm):
         model = Profile
         fields = ['site', 'web_property_id', 'display_features', 'is_enabled']
 
+    def __init__(self, *args, **kwargs):
+        super(ProfileAdminForm, self).__init__(*args, **kwargs)
 
-class GoogleAPIProfileAdminForm(forms.ModelForm):
+        if 'web_property_id' in self.fields:
+            self.fields['web_property_id'].widget.attrs.update(
+                {'placeholder': 'UA-xxxxxxxx-x'})
 
-    class Meta(object):
-        model = Profile
+
+class GoogleAPIProfileAdminForm(ProfileAdminForm):
+
+    class Meta(ProfileAdminForm.Meta):
         fields = ['site', 'profile_id', 'display_features', 'is_enabled']
 
     def __init__(self, *args, **kwargs):
