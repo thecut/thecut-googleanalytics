@@ -10,6 +10,7 @@ from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_unicode
 from django.views import generic
+from httplib2 import Http
 from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
 import base64
 import pickle
@@ -18,6 +19,7 @@ import pickle
 class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
 
     model = Profile
+
     scope = 'https://www.googleapis.com/auth/analytics.readonly'
 
     @csrf_protect_m
@@ -101,7 +103,7 @@ class OAuth2RevokeTokenView(generic.edit.DeleteView):
 
     def delete(self, *args, **kwargs):
         profile = self.get_object()
-        profile.revoke_oauth2_credentials()
+        profile.oauth2_credentials.revoke(Http())
         profile.profile_id = ''
         profile.save()
         self.model.objects.clear_cache()

@@ -81,19 +81,6 @@ class Profile(models.Model):
         storage = self._get_oauth2_storage()
         return storage.put(credentials)
 
-    def revoke_oauth2_credentials(self):
-        # Revoke the access token - this seems to be missing from oauth2client,
-        # so we'll do it ourselves.
-        # https://developers.google.com/accounts/docs/OAuth2WebServer#tokenrevoke
-        # http://code.google.com/p/google-api-python-client/issues/detail?id=98
-        http = self.oauth2_credentials.authorize(Http())
-        http.request(
-            'https://accounts.google.com/o/oauth2/revoke?token={0}'.format(
-                self.oauth2_credentials.refresh_token))
-        # TODO: Check for response status of 200
-        storage = self._get_oauth2_storage()
-        storage.delete()
-
 models.signals.post_save.connect(receivers.clear_cache, sender=Profile)
 models.signals.post_delete.connect(receivers.clear_cache, sender=Profile)
 
