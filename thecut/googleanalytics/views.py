@@ -9,15 +9,8 @@ from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_unicode
+from django.views import generic
 from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
-
-# Class-based views
-from distutils.version import StrictVersion
-from django import get_version
-if StrictVersion(get_version()) < StrictVersion('1.3'):
-    import cbv as generic
-else:
-    from django.views import generic
 
 
 class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):

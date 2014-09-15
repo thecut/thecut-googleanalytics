@@ -8,7 +8,7 @@
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
     ga('create', '{{ web_property_id }}', 'auto'{% if current_site.domain %}, {'legacyCookieDomain': '{{ current_site.domain }}'}{% endif %});
-    {% if display_advertiser_support %}ga('require', 'displayfeatures');{% endif %}
+    {% if display_features %}ga('require', 'displayfeatures');{% endif %}
     ga('send', 'pageview');
 
     //--><!]]>

@@ -27,15 +27,20 @@ class Profile(models.Model):
     """
 
     site = models.OneToOneField('sites.Site', unique=True, related_name='+')
+
     web_property_id = models.CharField(
         'web property ID', max_length=25,
         help_text='Web Property ID is obtained when '
                   '<a href="http://www.google.com/analytics/" target="_new">'
                   'configuring the site profile in Google Analytics</a>.')
+
     profile_id = models.CharField('profile ID', max_length=25, blank=True,
                                   default='')
-    display_advertiser_support = models.BooleanField(
-        default=False, help_text='Use DoubleClick remarketing tracking?')
+
+    display_features = models.BooleanField(
+        'Use Display advertising features?', default=False,
+        help_text='Used for remarketing, demographics and interest reporting.')
+
     is_enabled = models.BooleanField(
         'enabled', default=False, help_text='Is Google Analytics tracking '
                                             'enabled on the website?')
