@@ -18,7 +18,7 @@ import pickle
 class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
 
     model = Profile
-    scope = 'https://www.googleapis.com/auth/analytics'
+    scope = 'https://www.googleapis.com/auth/analytics.readonly'
 
     @csrf_protect_m
     @method_decorator(permission_required('googleanalytics.change_profile'))
