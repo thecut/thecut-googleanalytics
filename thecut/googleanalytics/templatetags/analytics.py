@@ -22,11 +22,11 @@ def analytics_tracking_code(context):
     except Profile.DoesNotExist:
         analytics_enabled = False
         web_property_id = None
-        display_advertiser_support = False
+        display_features = False
     else:
         analytics_enabled = analytics.is_enabled
         web_property_id = analytics.web_property_id
-        display_advertiser_support = analytics.display_advertiser_support
+        display_features = analytics.display_features
 
     try:
         current_site = Site.objects.get_current()
@@ -35,6 +35,6 @@ def analytics_tracking_code(context):
 
     return {'analytics_enabled': analytics_enabled,
             'web_property_id': web_property_id,
-            'display_advertiser_support': display_advertiser_support,
+            'display_features': display_features,
             'current_site': current_site,
             'request': context.get('request')}

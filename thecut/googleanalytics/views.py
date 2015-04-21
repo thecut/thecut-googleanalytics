@@ -9,21 +9,18 @@ from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_unicode
+from django.views import generic
+from httplib2 import Http
 from oauth2client.client import FlowExchangeError, OAuth2WebServerFlow
-
-# Class-based views
-from distutils.version import StrictVersion
-from django import get_version
-if StrictVersion(get_version()) < StrictVersion('1.3'):
-    import cbv as generic
-else:
-    from django.views import generic
+import base64
+import pickle
 
 
 class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
 
     model = Profile
-    scope = 'https://www.googleapis.com/auth/analytics'
+
+    scope = 'https://www.googleapis.com/auth/analytics.readonly'
 
     @csrf_protect_m
     @method_decorator(permission_required('googleanalytics.change_profile'))
@@ -34,8 +31,9 @@ class OAuth2RequestTokenView(generic.detail.SingleObjectMixin, generic.View):
         self.model.objects.clear_cache()
         self.object = self.get_object()
         flow = self.get_flow()
-        self.request.session['oauth2_googleanalytics_profile'] = self.object
-        self.request.session['oauth2_flow'] = flow
+        self.request.session['oauth2_googleanalytics_profile'] = self.object.pk
+        self.request.session['oauth2_flow'] = base64.b64encode(
+            pickle.dumps(flow))
         self.request.session.modified = True
         return HttpResponseRedirect(flow.step1_get_authorize_url())
 
@@ -74,16 +72,22 @@ class OAuth2CallbackView(generic.View):
         return super(OAuth2CallbackView, self).dispatch(*args, **kwargs)
 
     def get(self, *args, **kwargs):
-        self.object = self.request.session.pop(
-            'oauth2_googleanalytics_profile', None)
-        flow = self.request.session.pop('oauth2_flow', None)
+        profile_pk = self.request.session.pop('oauth2_googleanalytics_profile',
+                                             None)
+        try:
+            self.object = Profile.objects.get(pk=profile_pk)
+        except Profile.DoesNotExist:
+            self.object = None
+
+        pickled_flow = self.request.session.pop('oauth2_flow', None)
         code = self.request.GET.get('code', None)
         self.request.session.modified = True
 
-        if None in [self.object, flow, code]:
+        if None in [self.object, pickled_flow, code]:
             # TODO: Error handling
             return HttpResponseBadRequest()
         else:
+            flow = pickle.loads(base64.b64decode(pickled_flow))
             self.exchange_token(flow, code)
             return HttpResponseRedirect(self.get_success_url())
 
@@ -99,7 +103,7 @@ class OAuth2RevokeTokenView(generic.edit.DeleteView):
 
     def delete(self, *args, **kwargs):
         profile = self.get_object()
-        profile.revoke_oauth2_credentials()
+        profile.oauth2_credentials.revoke(Http())
         profile.profile_id = ''
         profile.save()
         self.model.objects.clear_cache()
