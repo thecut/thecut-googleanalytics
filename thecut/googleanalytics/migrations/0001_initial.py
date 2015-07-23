@@ -1,43 +1,42 @@
-# encoding: utf-8
-import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-class Migration(SchemaMigration):
-
-    def forwards(self, orm):
-        
-        # Adding model 'AnalyticsWebProperty'
-        db.create_table('googleanalytics_analyticswebproperty', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('site', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['sites.Site'], unique=True)),
-            ('web_property_id', self.gf('django.db.models.fields.CharField')(max_length=25)),
-            ('is_enabled', self.gf('django.db.models.fields.BooleanField')(default=False, blank=True)),
-        ))
-        db.send_create_signal('googleanalytics', ['AnalyticsWebProperty'])
+from django.db import models, migrations
+import oauth2client.django_orm
 
 
-    def backwards(self, orm):
-        
-        # Deleting model 'AnalyticsWebProperty'
-        db.delete_table('googleanalytics_analyticswebproperty')
+class Migration(migrations.Migration):
 
+    dependencies = [
+        ('sites', '0001_initial'),
+    ]
 
-    models = {
-        'googleanalytics.analyticswebproperty': {
-            'Meta': {'object_name': 'AnalyticsWebProperty'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'blank': 'True'}),
-            'site': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['sites.Site']", 'unique': 'True'}),
-            'web_property_id': ('django.db.models.fields.CharField', [], {'max_length': '25'})
-        },
-        'sites.site': {
-            'Meta': {'object_name': 'Site', 'db_table': "'django_site'"},
-            'domain': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        }
-    }
-
-    complete_apps = ['googleanalytics']
+    operations = [
+        migrations.CreateModel(
+            name='Profile',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('web_property_id', models.CharField(help_text='The property tracking ID is available when viewing the "Tracking Code" details in the Google Analytics admin.', max_length=25, verbose_name='property tracking ID')),
+                ('profile_id', models.CharField(default='', max_length=25, verbose_name='view (profile) ID', blank=True)),
+                ('display_features', models.BooleanField(default=False, help_text='Used for remarketing, demographics and interest reporting.', verbose_name='Use Display advertising features?')),
+                ('is_enabled', models.BooleanField(default=False, help_text='Is Google Analytics tracking enabled on the website?', verbose_name='enabled')),
+            ],
+            options={
+                'ordering': ['site'],
+                'verbose_name': 'view (profile)',
+                'verbose_name_plural': 'views (profiles)',
+            },
+        ),
+        migrations.CreateModel(
+            name='ProfileOAuth2Credentials',
+            fields=[
+                ('id', models.OneToOneField(related_name='_oauth2_credentials', primary_key=True, serialize=False, to='googleanalytics.Profile')),
+                ('credentials', oauth2client.django_orm.CredentialsField(null=True)),
+            ],
+        ),
+        migrations.AddField(
+            model_name='profile',
+            name='site',
+            field=models.OneToOneField(related_name='+', to='sites.Site'),
+        ),
+    ]
