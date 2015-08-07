@@ -73,7 +73,7 @@ class OAuth2CallbackView(generic.View):
 
     def get(self, *args, **kwargs):
         profile_pk = self.request.session.pop('oauth2_googleanalytics_profile',
-                                             None)
+                                              None)
         try:
             self.object = Profile.objects.get(pk=profile_pk)
         except Profile.DoesNotExist:

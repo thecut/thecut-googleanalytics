@@ -13,5 +13,5 @@ USE_GOOGLE_API = None not in [GOOGLE_API_CLIENT_ID, GOOGLE_API_CLIENT_SECRET]
 
 
 USER_AGENT = getattr(settings, 'GOOGLEANALYTICS_USER_AGENT',
-                     'thecut.googleanalytics/0.04.8 '
-                     '(The Cut; +http://www.thecut.net.au/)')
+                     'thecut.googleanalytics/0.3 '
+                     '(The Cut; +https://www.thecut.net.au/)')
