@@ -1,11 +1,9 @@
-The Cut Django App: Google Analytics
-
 ======================
 thecut.googleanalytics
 ======================
 
-To install this application (whilst in the project's activated virtualenv)::
-    pip install git+ssh://git@git.thecut.net.au/thecut-googleanalytics
+Google Analytics tracking code template and api client (oauth) helpers for
+Django.
 
 
 Add the ``thecut.googleanalytics`` to the project's ``INSTALLED_APPS``
