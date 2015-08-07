@@ -2,7 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 from . import receivers, settings
 from .managers import ProfileManager
-from apiclient.discovery import build
+from googleapiclient.discovery import build
 from django.db import models
 from httplib2 import Http
 from oauth2client.django_orm import CredentialsField, Storage
